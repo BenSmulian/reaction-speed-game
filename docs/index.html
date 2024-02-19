@@ -44,6 +44,12 @@
         document.getElementById("lobby-info").innerText = "Your lobby code is: " + lobbyCode;
         document.getElementById("lobby").style.display = "block";
         isHost = true;
+        if (isHost) {
+            document.getElementById("lobby-info").innerText = "Your lobby code is: " + lobbyCode;
+            document.getElementById("start-game").style.display = "block"; // Show the Start Game button
+        } else {
+            document.getElementById("lobby-info").innerText = "Waiting for the host to start the game";
+        }
     });
 
     document.getElementById("join-lobby").addEventListener("click", function() {
@@ -53,6 +59,12 @@
             document.getElementById("lobby").style.display = "block";
         }
         isHost = false;
+        if (isHost) {
+            document.getElementById("lobby-info").innerText = "Your lobby code is: " + lobbyCode;
+            document.getElementById("start-game").style.display = "block"; // Show the Start Game button
+        } else {
+            document.getElementById("lobby-info").innerText = "Waiting for the host to start the game";
+        }
     });
 
     document.getElementById("start-game").addEventListener("click", function() {
@@ -83,6 +95,7 @@
     function generateLobbyCode() {
         // Generate a random 4-digit lobby code
         return Math.floor(1000 + Math.random() * 9000);
+
     }
 
     function startGame() {
