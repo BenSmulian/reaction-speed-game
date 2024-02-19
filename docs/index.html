@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Lobby</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+    }
+    .container {
+        margin-top: 50px;
+    }
+    .nickname-input {
+        display: none;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Welcome to the Game Lobby</h2>
+    <button id="create-lobby">Create Lobby</button>
+    <button id="join-lobby">Join Lobby</button>
+
+    <div id="lobby" style="display:none;">
+        <p id="lobby-info"></p>
+        <input type="text" id="nickname" class="nickname-input" placeholder="Enter your nickname">
+        <button id="start-game" style="display:none;">Start Game</button>
+    </div>
+</div>
+
+<script>
+    let lobbyCode;
+    let nicknames = [];
+    let isHost = false;
+    let gameStarted = false;
+    let round = 1;
+    let players = [];
+
+    document.getElementById("create-lobby").addEventListener("click", function() {
+        lobbyCode = generateLobbyCode();
+        document.getElementById("lobby-info").innerText = "Your lobby code is: " + lobbyCode;
+        document.getElementById("lobby").style.display = "block";
+        isHost = true;
+    });
+
+    document.getElementById("join-lobby").addEventListener("click", function() {
+        lobbyCode = prompt("Enter the lobby code:");
+        if (lobbyCode) {
+            document.getElementById("nickname").style.display = "block";
+            document.getElementById("lobby").style.display = "block";
+        }
+        isHost = false;
+    });
+
+    document.getElementById("start-game").addEventListener("click", function() {
+        if (nicknames.length < 2) {
+            alert("Need at least two players to start the game!");
+            return;
+        }
+        startGame();
+    });
+
+    document.getElementById("nickname").addEventListener("change", function() {
+        const nickname = document.getElementById("nickname").value;
+        if (nickname) {
+            nicknames.push(nickname);
+            players.push({
+                nickname: nickname,
+                points: 0
+            });
+            if (isHost) {
+                document.getElementById("lobby-info").innerText = "Players in the lobby: " + nicknames.join(", ");
+                document.getElementById("start-game").style.display = "block";
+            } else {
+                document.getElementById("lobby-info").innerText = "Waiting for the host to start the game";
+            }
+        }
+    });
+
+    function generateLobbyCode() {
+        // Generate a random 4-digit lobby code
+        return Math.floor(1000 + Math.random() * 9000);
+    }
+
+    function startGame() {
+        gameStarted = true;
+        document.getElementById("start-game").style.display = "none";
+        document.getElementById("lobby-info").innerText = "Game Started!";
+        playRound();
+    }
+
+    function playRound() {
+        document.body.style.backgroundColor = "red";
+        setTimeout(function() {
+            document.body.style.backgroundColor = "green";
+            setTimeout(function() {
+                determineWinner();
+                if (round < 4) {
+                    round++;
+                    playRound();
+                } else {
+                    endGame();
+                }
+            }, getRandomTime());
+        }, 3000);
+    }
+
+    function determineWinner() {
+        const winner = Math.floor(Math.random() * players.length);
+        players[winner].points += 10;
+        alert(players[winner].nickname + " wins this round!");
+    }
+
+    function endGame() {
+        let winner = players[0];
+        for (let i = 1; i < players.length; i++) {
+            if (players[i].points > winner.points) {
+                winner = players[i];
+            }
+        }
+        alert("Game Over! Winner: " + winner.nickname);
+    }
+
+    function getRandomTime() {
+        return Math.floor(Math.random() * 5000) + 2000;
+    }
+</script>
+
+</body>
+</html>
