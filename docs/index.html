@@ -33,142 +33,63 @@
 </div>
 
 <script>
-    let lobbyCode;
-    let nicknames = [];
-    let isHost = false;
-    let gameStarted = false;
-    let round = 1;
-    let players = [];
+    // Function to make AJAX POST request to create a lobby
+    function createLobby() {
+        fetch('https://your-server-domain.com/create-lobby', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                lobbyCode: generateLobbyCode()
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Lobby created:', data);
+            document.getElementById("lobby-info").innerText = "Your lobby code is: " + data.lobbyCode;
+            document.getElementById("lobby").style.display = "block";
+            document.getElementById("start-game").style.display = "block";
+        })
+        .catch(error => {
+            console.error('Error creating lobby:', error);
+            alert('Error creating lobby. Please try again.');
+        });
+    }
 
-    document.getElementById("create-lobby").addEventListener("click", function() {
-        lobbyCode = generateLobbyCode();
-        document.getElementById("lobby-info").innerText = "Your lobby code is: " + lobbyCode;
-        document.getElementById("lobby").style.display = "block";
-        isHost = true;
-    });
-
-    document.getElementById("join-lobby").addEventListener("click", function() {
-        document.getElementById("lobby-code").style.display = "block";
-        document.getElementById("nickname").style.display = "block";
-        document.getElementById("lobby").style.display = "block";
-        document.getElementById("start-game").style.display = "none"; // Hide start game button until nickname is entered
-        isHost = false;
-    });
-
-    document.getElementById("start-game").addEventListener("click", function() {
-        if (players.length < 2) {
-            alert("Need at least two players to start the game!");
-            return;
-        }
-        startGame();
-    });
-
-    document.getElementById("nickname").addEventListener("change", function() {
+    // Function to make AJAX POST request to join a lobby
+    function joinLobby() {
+        const lobbyCode = document.getElementById("lobby-code").value;
         const nickname = document.getElementById("nickname").value;
-        if (nickname) {
-            nicknames.push(nickname);
-            players.push({
+        fetch('https://your-server-domain.com/join-lobby', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                lobbyCode: lobbyCode,
                 nickname: nickname,
-                points: 0
-            });
-            if (isHost) {
-                document.getElementById("lobby-info").innerText = "Players in the lobby: " + nicknames.join(", ");
-                if (nicknames.length >= 2) {
-                    document.getElementById("start-game").style.display = "block";
-                }
-            } else {
-                document.getElementById("lobby-info").innerText = "Waiting for the host to start the game";
-            }
-        }
-    });
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Joined lobby:', data);
+            document.getElementById("lobby-info").innerText = "Players in the lobby: " + data.players.map(player => player.nickname).join(", ");
+            document.getElementById("lobby").style.display = "block";
+        })
+        .catch(error => {
+            console.error('Error joining lobby:', error);
+            alert('Error joining lobby. Please check the lobby code and try again.');
+        });
+    }
 
-    document.getElementById("lobby-code").addEventListener("change", function() {
-        lobbyCode = document.getElementById("lobby-code").value;
-        if (isHost) {
-            // This block should be executed only if the user is the host.
-            // In a real-world scenario, you would probably send the lobby code to the server
-            // and check if any players have joined using this code.
-            alert("Player joined lobby with code: " + lobbyCode);
-        }
-    });
+    document.getElementById("create-lobby").addEventListener("click", createLobby);
+
+    document.getElementById("join-lobby").addEventListener("click", joinLobby);
 
     function generateLobbyCode() {
         // Generate a random 4-digit lobby code
         return Math.floor(1000 + Math.random() * 9000);
-    }
-
-    function startGame() {
-        gameStarted = true;
-        document.getElementById("start-game").style.display = "none";
-        document.getElementById("lobby-info").innerText = "Game Started!";
-        playRound();
-    }
-
-    function playRound() {
-        // Display countdown
-        document.getElementById("lobby-info").innerText = "Game Starting in 3...";
-        setTimeout(function() {
-            document.getElementById("lobby-info").innerText = "Game Starting in 2...";
-            setTimeout(function() {
-                document.getElementById("lobby-info").innerText = "Game Starting in 1...";
-                setTimeout(function() {
-                    document.getElementById("lobby-info").innerText = "Red Screen!";
-                    document.body.style.backgroundColor = "red";
-                    setTimeout(function() {
-                        document.getElementById("lobby-info").innerText = "Green Screen!";
-                        document.body.style.backgroundColor = "green";
-                        setTimeout(function() {
-                            document.getElementById("lobby-info").innerText = "Shake or Press Space!";
-                            document.body.style.backgroundColor = "white"; // Change background back to white
-                            // Add event listener for shake or space press
-                            window.addEventListener("keydown", handleKeyPress);
-                            window.addEventListener("devicemotion", handleShake);
-                        }, getRandomTime());
-                    }, 3000);
-                }, 1000);
-            }, 1000);
-        }, 1000);
-    }
-
-    function handleKeyPress(event) {
-        if (event.keyCode === 32) { // Space key
-            handleWin();
-        }
-    }
-
-    function handleShake(event) {
-        // You can implement shake detection logic here
-        // For simplicity, let's assume shaking always leads to winning
-        handleWin();
-    }
-
-    function handleWin() {
-        // Remove event listeners to prevent multiple wins
-        window.removeEventListener("keydown", handleKeyPress);
-        window.removeEventListener("devicemotion", handleShake);
-        const winnerIndex = Math.floor(Math.random() * players.length);
-        players[winnerIndex].points += 10;
-        document.getElementById("lobby-info").innerText = players[winnerIndex].nickname + " wins this round!";
-        if (round < 4) {
-            round++;
-            setTimeout(playRound, 2000); // Wait 2 seconds before starting next round
-        } else {
-            endGame();
-        }
-    }
-
-    function endGame() {
-        let winner = players[0];
-        for (let i = 1; i < players.length; i++) {
-            if (players[i].points > winner.points) {
-                winner = players[i];
-            }
-        }
-        alert("Game Over! Winner: " + winner.nickname);
-    }
-
-    function getRandomTime() {
-        return Math.floor(Math.random() * 5000) + 2000;
     }
 </script>
 
