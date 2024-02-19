@@ -26,6 +26,7 @@
 
     <div id="lobby" style="display:none;">
         <p id="lobby-info"></p>
+        <input type="text" id="lobby-code" class="nickname-input" placeholder="Enter lobby code">
         <input type="text" id="nickname" class="nickname-input" placeholder="Enter your nickname">
         <button id="start-game" style="display:none;">Start Game</button>
     </div>
@@ -47,12 +48,10 @@
     });
 
     document.getElementById("join-lobby").addEventListener("click", function() {
-        lobbyCode = prompt("Enter the lobby code:");
-        if (lobbyCode) {
-            document.getElementById("nickname").style.display = "block";
-            document.getElementById("lobby").style.display = "block";
-            document.getElementById("start-game").style.display = "none"; // Hide start game button until nickname is entered
-        }
+        document.getElementById("lobby-code").style.display = "block";
+        document.getElementById("nickname").style.display = "block";
+        document.getElementById("lobby").style.display = "block";
+        document.getElementById("start-game").style.display = "none"; // Hide start game button until nickname is entered
         isHost = false;
     });
 
@@ -80,6 +79,16 @@
             } else {
                 document.getElementById("lobby-info").innerText = "Waiting for the host to start the game";
             }
+        }
+    });
+
+    document.getElementById("lobby-code").addEventListener("change", function() {
+        lobbyCode = document.getElementById("lobby-code").value;
+        if (isHost) {
+            // This block should be executed only if the user is the host.
+            // In a real-world scenario, you would probably send the lobby code to the server
+            // and check if any players have joined using this code.
+            alert("Player joined lobby with code: " + lobbyCode);
         }
     });
 
