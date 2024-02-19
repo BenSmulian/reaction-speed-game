@@ -44,12 +44,6 @@
         document.getElementById("lobby-info").innerText = "Your lobby code is: " + lobbyCode;
         document.getElementById("lobby").style.display = "block";
         isHost = true;
-        if (isHost) {
-            document.getElementById("lobby-info").innerText = "Your lobby code is: " + lobbyCode;
-            document.getElementById("start-game").style.display = "block"; // Show the Start Game button
-        } else {
-            document.getElementById("lobby-info").innerText = "Waiting for the host to start the game";
-        }
     });
 
     document.getElementById("join-lobby").addEventListener("click", function() {
@@ -57,18 +51,13 @@
         if (lobbyCode) {
             document.getElementById("nickname").style.display = "block";
             document.getElementById("lobby").style.display = "block";
+            document.getElementById("start-game").style.display = "none"; // Hide start game button until nickname is entered
         }
         isHost = false;
-        if (isHost) {
-            document.getElementById("lobby-info").innerText = "Your lobby code is: " + lobbyCode;
-            document.getElementById("start-game").style.display = "block"; // Show the Start Game button
-        } else {
-            document.getElementById("lobby-info").innerText = "Waiting for the host to start the game";
-        }
     });
 
     document.getElementById("start-game").addEventListener("click", function() {
-        if (nicknames.length < 2) {
+        if (players.length < 2) {
             alert("Need at least two players to start the game!");
             return;
         }
@@ -85,7 +74,9 @@
             });
             if (isHost) {
                 document.getElementById("lobby-info").innerText = "Players in the lobby: " + nicknames.join(", ");
-                document.getElementById("start-game").style.display = "block";
+                if (nicknames.length >= 2) {
+                    document.getElementById("start-game").style.display = "block";
+                }
             } else {
                 document.getElementById("lobby-info").innerText = "Waiting for the host to start the game";
             }
@@ -95,7 +86,6 @@
     function generateLobbyCode() {
         // Generate a random 4-digit lobby code
         return Math.floor(1000 + Math.random() * 9000);
-
     }
 
     function startGame() {
