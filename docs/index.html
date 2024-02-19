@@ -93,25 +93,56 @@
     }
 
     function playRound() {
-        document.body.style.backgroundColor = "red";
+        // Display countdown
+        document.getElementById("lobby-info").innerText = "Game Starting in 3...";
         setTimeout(function() {
-            document.body.style.backgroundColor = "green";
+            document.getElementById("lobby-info").innerText = "Game Starting in 2...";
             setTimeout(function() {
-                determineWinner();
-                if (round < 4) {
-                    round++;
-                    playRound();
-                } else {
-                    endGame();
-                }
-            }, getRandomTime());
-        }, 3000);
+                document.getElementById("lobby-info").innerText = "Game Starting in 1...";
+                setTimeout(function() {
+                    document.getElementById("lobby-info").innerText = "Red Screen!";
+                    document.body.style.backgroundColor = "red";
+                    setTimeout(function() {
+                        document.getElementById("lobby-info").innerText = "Green Screen!";
+                        document.body.style.backgroundColor = "green";
+                        setTimeout(function() {
+                            document.getElementById("lobby-info").innerText = "Shake or Press Space!";
+                            document.body.style.backgroundColor = "white"; // Change background back to white
+                            // Add event listener for shake or space press
+                            window.addEventListener("keydown", handleKeyPress);
+                            window.addEventListener("devicemotion", handleShake);
+                        }, getRandomTime());
+                    }, 3000);
+                }, 1000);
+            }, 1000);
+        }, 1000);
     }
 
-    function determineWinner() {
-        const winner = Math.floor(Math.random() * players.length);
-        players[winner].points += 10;
-        alert(players[winner].nickname + " wins this round!");
+    function handleKeyPress(event) {
+        if (event.keyCode === 32) { // Space key
+            handleWin();
+        }
+    }
+
+    function handleShake(event) {
+        // You can implement shake detection logic here
+        // For simplicity, let's assume shaking always leads to winning
+        handleWin();
+    }
+
+    function handleWin() {
+        // Remove event listeners to prevent multiple wins
+        window.removeEventListener("keydown", handleKeyPress);
+        window.removeEventListener("devicemotion", handleShake);
+        const winnerIndex = Math.floor(Math.random() * players.length);
+        players[winnerIndex].points += 10;
+        document.getElementById("lobby-info").innerText = players[winnerIndex].nickname + " wins this round!";
+        if (round < 4) {
+            round++;
+            setTimeout(playRound, 2000); // Wait 2 seconds before starting next round
+        } else {
+            endGame();
+        }
     }
 
     function endGame() {
