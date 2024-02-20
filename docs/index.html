@@ -35,7 +35,7 @@
 <script>
     // Function to make AJAX POST request to create a lobby
     function createLobby() {
-        fetch('https://bensmulian.github.io/reaction-speed-game/create-lobby', {
+        fetch('https://bensmulian.github.io/reaction-speed-game', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -61,7 +61,7 @@
     function joinLobby() {
         const lobbyCode = document.getElementById("lobby-code").value;
         const nickname = document.getElementById("nickname").value;
-        fetch('https://bensmulian.github.io/reaction-speed-game/join-lobby', {
+        fetch('https://bensmulian.github.io/reaction-speed-game', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
