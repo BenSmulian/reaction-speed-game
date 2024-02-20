@@ -1,57 +1,97 @@
-// server.js
-
-const express = require('express');
-const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
-const Lobby = require('./lobbyModel');
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-app.use(bodyParser.json());
-
-// Enable CORS
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'https://bensmulian.github.io');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  next();
-});
-
-// Connect to MongoDB database
-mongoose.connect('mongodb://localhost:27017/game_lobbies', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-
-// Create a new lobby
-app.post('/create-lobby', async (req, res) => {
-  try {
-    const { lobbyCode } = req.body;
-    const newLobby = new Lobby({ lobbyCode, players: [] });
-    await newLobby.save();
-    res.status(201).json(newLobby);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// Join a lobby
-app.post('/join-lobby', async (req, res) => {
-  try {
-    const { lobbyCode, nickname } = req.body;
-    const lobby = await Lobby.findOne({ lobbyCode });
-    if (!lobby) {
-      return res.status(404).json({ message: 'Lobby not found' });
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Lobby</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        text-align: center;
     }
-    lobby.players.push({ nickname, points: 0 });
-    await lobby.save();
-    res.json(lobby);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
+    .container {
+        margin-top: 50px;
+    }
+    .nickname-input {
+        display: none;
+    }
+</style>
+</head>
+<body>
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+<div class="container">
+    <h2>Welcome to the Game Lobby</h2>
+    <button id="create-lobby">Create Lobby</button>
+    <button id="join-lobby">Join Lobby</button>
+
+    <div id="lobby" style="display:none;">
+        <p id="lobby-info"></p>
+        <input type="text" id="lobby-code" class="nickname-input" placeholder="Enter lobby code">
+        <input type="text" id="nickname" class="nickname-input" placeholder="Enter your nickname">
+        <button id="start-game" style="display:none;">Start Game</button>
+    </div>
+</div>
+
+<script>
+    // Function to make AJAX POST request to create a lobby
+    function createLobby() {
+        fetch('https://bensmulian.github.io/reaction-speed-game/create-lobby', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                lobbyCode: generateLobbyCode()
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Lobby created:', data);
+            document.getElementById("lobby-info").innerText = "Your lobby code is: " + data.lobbyCode;
+            document.getElementById("lobby").style.display = "block";
+            document.getElementById("start-game").style.display = "block";
+        })
+        .catch(error => {
+            console.error('Error creating lobby:', error);
+            alert('Error creating lobby. Please try again.');
+        });
+    }
+
+    // Function to make AJAX POST request to join a lobby
+    function joinLobby() {
+        const lobbyCode = document.getElementById("lobby-code").value;
+        const nickname = document.getElementById("nickname").value;
+        fetch('https://bensmulian.github.io/reaction-speed-game/join-lobby', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                lobbyCode: lobbyCode,
+                nickname: nickname,
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Joined lobby:', data);
+            document.getElementById("lobby-info").innerText = "Players in the lobby: " + data.players.map(player => player.nickname).join(", ");
+            document.getElementById("lobby").style.display = "block";
+        })
+        .catch(error => {
+            console.error('Error joining lobby:', error);
+            alert('Error joining lobby. Please check the lobby code and try again.');
+        });
+    }
+
+    document.getElementById("create-lobby").addEventListener("click", createLobby);
+
+    document.getElementById("join-lobby").addEventListener("click", joinLobby);
+
+    function generateLobbyCode() {
+        // Generate a random 4-digit lobby code
+        return Math.floor(1000 + Math.random() * 9000);
+    }
+</script>
+
+</body>
+</html>
