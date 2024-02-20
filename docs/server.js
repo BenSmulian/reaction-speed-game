@@ -10,6 +10,13 @@ const PORT = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
+// Enable CORS
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'https://bensmulian.github.io');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  next();
+});
+
 // Connect to MongoDB database
 mongoose.connect('mongodb://localhost:27017/game_lobbies', {
   useNewUrlParser: true,
